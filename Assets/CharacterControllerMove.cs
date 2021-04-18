@@ -40,6 +40,10 @@ public class CharacterControllerMove : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(moveDirection);
             }
 
+            //set moveSpeed before appending y-movement
+            animator.SetFloat("MoveSpeed", moveDirection.magnitude);
+            Debug.Log(animator.GetFloat("MoveSpeed"));
+
             if (jump)
             {
                 moveDirection.y = jumpSpeed;
@@ -47,12 +51,10 @@ public class CharacterControllerMove : MonoBehaviour
             
             
         }
-        //set moveSpeed before applying gravity
-        animator.SetFloat("MoveSpeed", moveDirection.magnitude);
 
         moveDirection.y -= gravity * Time.fixedDeltaTime;
 
-        Debug.Log(animator.GetFloat("MoveSpeed"));
+        
         controller.Move(moveDirection * Time.fixedDeltaTime);
     }
 
