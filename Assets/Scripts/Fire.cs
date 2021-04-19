@@ -20,7 +20,7 @@ public class Fire : MonoBehaviour
     {
         if (collision.tag == "Player")
         {
-            Debug.Log("Collide");
+            //set player on fire
             CharacterControllerMove c = collision.GetComponent<CharacterControllerMove>();
             if (!c.onFire)//if not already on fire
                 c.onFire=true;//set player onFire to true

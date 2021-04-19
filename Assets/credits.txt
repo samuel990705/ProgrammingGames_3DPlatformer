@@ -1,0 +1,4 @@
+Enviornment and platform: https://assetstore.unity.com/packages/3d/environments/landscapes/low-poly-simple-nature-pack-162153
+Player (astronaut): https://assetstore.unity.com/packages/3d/characters/humanoids/sci-fi/stylized-astronaut-114298
+Enemy: https://assetstore.unity.com/packages/3d/characters/humanoids/stylized-bandit-112800
+Fire particle effect: https://assetstore.unity.com/packages/vfx/particles/fire-explosions/tinyfire-vfx-1-0-97898#content

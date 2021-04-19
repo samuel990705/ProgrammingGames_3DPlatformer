@@ -8,18 +8,21 @@ public class CharacterControllerMove : MonoBehaviour
     CharacterController controller;
     Animator animator;
 
+
+    //variables related to regular character movement
     float speed = 8.0f;
     float jumpSpeed = 10.0f;
     float gravity = 25.0f;
-
     float groundedBuffer;//a timer for how long player has been "ungrounded". Used because sometimes player rotate uncontrollably when leaving ground for a split second
-
-
     Vector3 moveDirection = Vector3.zero;
     float xMove;
     float yMove;
     bool jump;
+    Vector3 jumpDirection;//allows for some steering while player is in-air for a more fluid motion
+    private float strafeSpeed = 5.0f;//speed of player in the air
 
+
+    //variables used to set player on fire
     public bool onFire;//used to interact with campfire
     [SerializeField]GameObject fire;//particle effect used to spawn fire on head lol
     GameObject flame;//actual flame prefab that is spawned ontop of Player
@@ -28,9 +31,13 @@ public class CharacterControllerMove : MonoBehaviour
     float burningSpeed=10f;//speed of player when player is on fire
     Vector3 burningMove;//equivalent to moveDirection but for when player is on fire
 
-    //allows for some steering while player is in-air for a more fluid motion
-    Vector3 jumpDirection;
-    private float strafeSpeed = 5.0f;//speed of player in the air
+
+    //variables used to kick player
+    bool kicked;//indicates if player was kicked by mob
+    Vector3 kickMove;//direction player will be kicked to
+    float kickDuration;//duration player is kicked for
+
+ 
 
 
 
@@ -42,12 +49,44 @@ public class CharacterControllerMove : MonoBehaviour
         xMove = 0f;
         yMove = 0f;
         groundedBuffer = 0;
+        kicked = false;
         burnTimer = -1;
         burningMove = new Vector3();
+        kickDuration = 0;
     }
 
     private void FixedUpdate()
     {
+        /*****************************
+         *        Kicked by Mob      *
+         *****************************/
+
+        if (kicked)//if player got kicked by mob
+        {
+            
+            kickDuration -= Time.fixedDeltaTime;//decrement kicktimer
+            if (kickDuration <= 0)//stop being kickd once kick duration has elapsed
+            {
+                kicked = false;
+            }
+
+            // Face in direction of movement.
+            if (Mathf.Abs(kickMove.x) > float.Epsilon || Mathf.Abs(kickMove.z) > float.Epsilon)
+            {
+                transform.rotation = Quaternion.LookRotation(new Vector3(kickMove.x, 0f, kickMove.z));
+            }
+
+            //gravity
+            kickMove.y -= gravity * Time.fixedDeltaTime;
+
+            controller.Move(kickMove);
+
+        }
+
+         /*****************************
+         *        Player on Fire      *
+         *****************************/
+
         if (onFire)//if player is currently on fire
         {
             animator.SetBool("Grounded", controller.isGrounded);//always running when on fire
@@ -68,7 +107,6 @@ public class CharacterControllerMove : MonoBehaviour
             }
             if (burnTimer % 60 == 0)//every 60 frames (3 times in 200 frames)
             {
-                Debug.Log(burnTimer);
 
                 do//don't allow both x,y to be 0, or else player will just stand still
                 {
@@ -99,6 +137,11 @@ public class CharacterControllerMove : MonoBehaviour
             burnTimer--;//decremenet burnTimer
             return;//skip everything below
         }
+
+
+        /********************************
+         *        Regular Movement      *
+         ********************************/
 
         animator.SetFloat("RunAnimationSpeed", 1f);
 
@@ -157,6 +200,22 @@ public class CharacterControllerMove : MonoBehaviour
         if (this.transform.position.y <=-4f)//player have fallen off the map
         {
             this.transform.position = new Vector3(1.805f, 4f, -6.66f);//return to spawn
+        }
+    }
+
+    void OnTriggerEnter(Collider collision)
+    {
+        if (collision.tag == "Agent")
+        {
+
+            //set magnitude and direction of kick
+            kickMove = (this.transform.position - collision.transform.position);//direction to be kicked to
+            kickMove.y = 0;//disregard y position of contact
+            kickMove = kickMove.normalized * 0.5f;
+            kickMove.y = jumpSpeed*0.2f;
+
+            kicked = true;
+            kickDuration = 0.3f;
         }
     }
 }
